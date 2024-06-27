@@ -6,7 +6,6 @@ class PlayerProcessor:
     def process(data):
         """Transforms Lichess API data into an ORM format."""
         player = Player(
-            id=data['id'],
             username=data['username'],
             title=data.get('title'),
             flair=data.get('flair'),

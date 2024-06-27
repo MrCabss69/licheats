@@ -7,8 +7,7 @@ Base = declarative_base()
 
 class Player(Base):
     __tablename__ = 'players'
-    id = Column(String, primary_key=True)
-    username = Column(String, unique=True)
+    username = Column(String, primary_key=True, unique=True)
     title = Column(String)
     flair = Column(String)
     patron = Column(Boolean)
@@ -51,8 +50,8 @@ class Game(Base):
     players_black_rating = Column(Integer, nullable=True)
     tournament_id = Column(String, nullable=True)
 
-    players_white_id = Column(String, ForeignKey('players.id'))
-    players_black_id = Column(String, ForeignKey('players.id'))
+    players_white_id = Column(String, ForeignKey('players.username'))
+    players_black_id = Column(String, ForeignKey('players.username'))
 
     white_player = relationship("Player", foreign_keys=[players_white_id], back_populates="games_as_white")
     black_player = relationship("Player", foreign_keys=[players_black_id], back_populates="games_as_black")

@@ -4,7 +4,7 @@ from licheats.services import LichessApiService, DataService, StatService
 class Client:
 
     def __init__(self) -> None:
-        self.api_service = LichessApiService()
+        self.api_service  = LichessApiService()
         self.data_service = DataService()
         self.stat_service = StatService()
     
@@ -15,8 +15,7 @@ class Client:
         return player
 
     def get_games(self, username:str):
-        player = self.get_player(username)
-        games = self.data_service.get_player_games(player)
+        games = self.data_service.get_player_games(username)
         if not games:
             games = self.api_service.get_games(username)
         return games

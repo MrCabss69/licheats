@@ -1,1 +1,1 @@
-lichess_api_token = 'lip_ncO7xGLG8rvYPmzRmtwk'
+lichess_api_token = 'lip_MWVDAWocru7GbIAGUli1'

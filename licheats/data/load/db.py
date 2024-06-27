@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from licheats.shared import Base, Player, Game
 
 class DatabaseManager:
-    def __init__(self, engine_url='sqlite:////home/jd/Documentos/CODIGO/Lichess-Openings/licheats/data/load/ajedrez.db'):
+    def __init__(self, engine_url='sqlite:////home/jd/Documentos/CODIGO/Lichess-Openings/licheats/data/ajedrez.db'):
         self.engine = create_engine(engine_url, echo=False)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
@@ -39,12 +39,12 @@ class DatabaseManager:
 
     def get_player_games(self, player_id: str):
         with self.session_scope() as session:
-            games_white = session.query(Game).filter_by(players_white_username=player_id).all()
-            games_black = session.query(Game).filter_by(players_black_username=player_id).all()
+            games_white = session.query(Game).filter_by(players_white_id=player_id).all()
+            games_black = session.query(Game).filter_by(players_black_id=player_id).all()
             return games_white + games_black
 
     def delete_player(self, player_id: str):
         with self.session_scope() as session:
-            player = session.query(Player).filter_by(id=player_id).one_or_none()
+            player = session.query(Player).filter_by(username=player_id).one_or_none()
             if player:
                 session.delete(player)

@@ -19,7 +19,8 @@ class LichessClient:
             max=max_games,
             since=since_ts,
             until=until_ts,
-            perf_type=perf_type
+            perf_type=perf_type,
+            opening=True
         )
         return list(games)
 

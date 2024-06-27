@@ -10,15 +10,12 @@ class DataService:
         player = self.data_manager.get_player(username)
         return player
     
-    def get_player_games(self, player:Player) -> Game:
+    def get_player_games(self, player: Player) -> Game:
         games = self.data_manager.get_player_games(player)
         return games
     
     def save_player(self, player: Player) -> None:
-        try:
-            self.data_manager.save_player(player)
-        except:
-            pass
+        self.data_manager.save_player(player)
     
     def save_games(self, games: Union[Game]) -> None:
         for game in games:
