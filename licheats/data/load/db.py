@@ -1,18 +1,15 @@
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker # , relationship
 from contextlib import contextmanager
-from licheats.shared import Player, Game
-
-Base = declarative_base()
+from licheats.shared import Base, Player, Game
 
 class DatabaseManager:
-    def __init__(self, engine_url='sqlite:///ajedrez.db'):
+    def __init__(self, engine_url='sqlite:////home/jd/Documentos/CODIGO/Lichess-Openings/licheats/data/load/ajedrez.db'):
         self.engine = create_engine(engine_url, echo=False)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
+        
 
     @contextmanager
     def session_scope(self):
@@ -28,24 +25,26 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def add_player(self, player):
+    def add_player(self, player: Player):
         with self.session_scope() as session:
             session.add(player)
 
-    def add_game(self, game):
+    def add_game(self, game: Game):
         with self.session_scope() as session:
             session.add(game)
 
-    def find_player_by_username(self, username):
+    def find_player_by_username(self, username: str) -> Player:
         with self.session_scope() as session:
-            return session.query(Player).filter(Player.username == username).one_or_none()
+            return session.query(Player).filter_by(username=username).one_or_none()
 
-    def find_games_by_player(self, player_id):
+    def find_games_by_player(self, player_id: str):
         with self.session_scope() as session:
-            return session.query(Game).filter_by(players_white_id=player_id).all() + \
-                   session.query(Game).filter_by(players_black_id=player_id).all()
+            games_white = session.query(Game).filter_by(players_white_username=player_id).all()
+            games_black = session.query(Game).filter_by(players_black_username=player_id).all()
+            return games_white + games_black
 
-    def delete_player(self, player_id):
+    def delete_player(self, player_id: str):
         with self.session_scope() as session:
-            player = session.query(Player).filter(Player.id == player_id).one()
-            session.delete(player)
+            player = session.query(Player).filter_by(id=player_id).one_or_none()
+            if player:
+                session.delete(player)

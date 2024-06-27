@@ -10,7 +10,7 @@ class LichessApiService:
     """
 
     @staticmethod
-    def fetch_user_data(username: str) -> Union[Player, Union[Game]]:
+    def fetch_user_data(username: str) -> Union[Player, list[Game], list[str]]:
         """
         Método estático para recuperar datos del usuario.
         
@@ -18,22 +18,26 @@ class LichessApiService:
         - username (str): Nombre de usuario en Lichess.
         
         Returns:
-        - Player or Game: Objeto Player si se obtiene información de jugador,
-          o Game si se obtiene información de juego.
+        - Union[Player, list[Game]]: Objeto Player si se obtiene información de jugador,
+          o lista de Game si se obtiene información de juegos.
         """
-        lichess_client   = LichessClient()
-        game_processor   = GameProcessor()
-        player_processor = PlayerProcessor() 
-        
-        # Ejemplo de uso del cliente para obtener datos
-        player_info = lichess_client.get_profile(username)
-        player_games = lichess_client.get_games(username)
-        
+        lichess_client = LichessClient()
+        player_info    = lichess_client.get_profile(username)
+        player_games   = lichess_client.get_games(username)
         if not player_info:
-            return None, None
-        player = player_processor.process(player_info)
+            return None
+
+        player = PlayerProcessor().process(player_info)
         if not player_games:
-            return player, None
-        return player, [game_processor.process(g) for g in player_games]
+            return player, None, ["Not player games available"]
         
-        
+        games, errors =  [], []
+        for game_data in player_games:
+            try:
+                processed_game = GameProcessor.process(game_data)
+                games.append(processed_game)
+            except ValueError as e:
+                errors.append(f"Error processing game {game_data.get('id', 'Unknown')}: {str(e)}")
+        if not games and errors:
+            raise Exception("No games could be processed successfully: " + ", ".join(errors))
+        return player, games, errors

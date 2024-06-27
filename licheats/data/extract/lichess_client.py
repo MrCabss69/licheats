@@ -1,12 +1,13 @@
+# licheats/data/extract/lichess_client.py
 import berserk
 from licheats.shared.constants import lichess_api_token
 
 class LichessClient:
-    def __init__(self, token):
+    def __init__(self, token=lichess_api_token):
         session = berserk.TokenSession(token)
         self.client = berserk.Client(session)
 
-    def get_games(self, username, max_games=None, since=None, until=None, perf_type=None):
+    def get_games(self, username, max_games=10, since=None, until=None, perf_type=None):
         """Fetch games of a player from Lichess."""
         # Converting datetime to timestamps if not None
         since_ts = berserk.utils.to_millis(since) if since else None
