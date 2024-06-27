@@ -1,20 +1,34 @@
 # Licheats - Lichess Data Retrieval and Analysis
 
-## Resumen del Proyecto: Sistema de Visualización y Análisis de Partidas de Ajedrez
+## Resumen del Proyecto
 
-### Objetivo del Proyecto
+**Licheats** es un sistema avanzado para la visualización y análisis de estadísticas de partidas de ajedrez, centrado especialmente en las aperturas. Este sistema no solo permite almacenar y gestionar información sobre partidas de ajedrez en una base de datos estructurada, sino que también proporciona herramientas analíticas para explorar estrategias de aperturas, evaluar el rendimiento de los jugadores y predecir resultados basados en el historial de juego.
 
-El proyecto tiene como objetivo desarrollar un sistema para visualizar y analizar estadísticas de partidas de ajedrez, centrandose en las aperturas. Utiliza una base de datos para almacenar información de partidas y ofrece herramientas para generar diversas visualizaciones y análisis estadísticos.
+### Objetivos del Proyecto
 
-La meta es analizar las estadísticas y aperturas de los jugadores, no solo para entender el estilo y estrategias preferidas, sino también para predecir la mejor opción de apertura cuando dos jugadores específicos se enfrentan en cada uno de los casos posibles.
+El objetivo principal del proyecto es desarrollar un sistema integral que permita:
+- Analizar y visualizar estadísticas de partidas de ajedrez.
+- Investigar las preferencias y efectividad de diferentes aperturas de ajedrez.
+- Prever las mejores estrategias de apertura para enfrentamientos específicos entre jugadores.
 
-### Preguntas a responder
+### Preguntas Clave a Responder
 
-Respecto al usuario:
-- se suele enrocar? Hacia que lado?
-- juega mejor con damas o sin damas?
-- cuando pierde es por tiempo, por posición (abandono), o por jaque mate?
-- cuando gana es  por tiempo, por posición (abandono), o por jaque mate?
-- juega mejor con blancas o con negras? Cuánto mejor?
-- se pone nervioso en apuros de tiempo? (cuánto incrementan sus errores con poco tiemo en el reloj)
-- prefiere ritmos rápidos o lentos (rating más alto en qué modalidades)?
+El sistema está diseñado para responder a preguntas específicas relacionadas con el comportamiento y el rendimiento de los jugadores:
+- ¿El jugador tiende a enrocarse? Si es así, ¿hacia qué lado prefiere?
+- ¿El jugador tiene un mejor rendimiento con damas en el tablero o sin ellas?
+- ¿Cuáles son las causas más comunes de las derrotas del jugador (tiempo, abandono, jaque mate)?
+- ¿Cómo suele ganar el jugador sus partidas (por tiempo, por abandono del oponente, por jaque mate)?
+- ¿El jugador tiene un mejor rendimiento con las piezas blancas o negras?
+- ¿Cómo afecta la presión del tiempo al rendimiento del jugador?
+- ¿Cuál es la preferencia del jugador respecto al ritmo de juego (rápidas, blitz, estándar)?
+
+
+### Uso
+
+```python
+from licheats.core.client import Client
+
+client = Client()
+user_resume = client.get_user_resume('username')
+print(user_resume)
+``````
