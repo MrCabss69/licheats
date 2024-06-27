@@ -6,22 +6,20 @@ class DataService:
     def __init__(self):
         self.data_manager = DatabaseManager()
     
-    def get_username_data(self, username: str):
-        player = self.data_manager.find_player_by_username(username)
-        if player:
-            games = self.data_manager.find_games_by_player(player.id)
-            return player, games
-        return None
+    def get_player(self, username: str):
+        player = self.data_manager.get_player(username)
+        return player
     
-    def add_player_data(self, player: Player, games: Union[Game]) -> None:
-        
-        self.data_manager.add_player(player)
+    def get_player_games(self, player:Player) -> Game:
+        games = self.data_manager.get_player_games(player)
+        return games
+    
+    def save_player(self, player: Player) -> None:
+        try:
+            self.data_manager.save_player(player)
+        except:
+            pass
+    
+    def save_games(self, games: Union[Game]) -> None:
         for game in games:
-            try:
-                self.data_manager.add_game(game)
-            except:
-                pass
-
-    def add_games(self, games: Union[Game])-> None:
-        for game in games:
-            self.data_manager.add_game(game)
+            self.data_manager.save_game(game)

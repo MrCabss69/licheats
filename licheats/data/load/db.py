@@ -25,19 +25,19 @@ class DatabaseManager:
         finally:
             session.close()
 
-    def add_player(self, player: Player):
+    def save_player(self, player: Player):
         with self.session_scope() as session:
             session.add(player)
 
-    def add_game(self, game: Game):
+    def save_game(self, game: Game):
         with self.session_scope() as session:
             session.add(game)
 
-    def find_player_by_username(self, username: str) -> Player:
+    def get_player(self, username: str) -> Player:
         with self.session_scope() as session:
             return session.query(Player).filter_by(username=username).one_or_none()
 
-    def find_games_by_player(self, player_id: str):
+    def get_player_games(self, player_id: str):
         with self.session_scope() as session:
             games_white = session.query(Game).filter_by(players_white_username=player_id).all()
             games_black = session.query(Game).filter_by(players_black_username=player_id).all()
