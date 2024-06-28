@@ -18,10 +18,10 @@ class Client:
             player = self.api_service.get_player(username)
         return player
 
-    def get_games(self, username:str):
-        games = self.data_service.get_player_games(username)
+    def get_games(self, username:str, max_games=None):
+        games = self.data_service.get_player_games(username, max_games)
         if not games:
-            games = self.api_service.get_games(username)
+            games = self.api_service.get_games(username, max_games)
         return games
 
     def save_player(self,player):

@@ -10,6 +10,7 @@ class DatabaseManager:
         Base.metadata.create_all(self.engine)
         # Crear una Session factory que no expire los objetos tras commit
         self.Session = scoped_session(sessionmaker(bind=self.engine, expire_on_commit=False))
+        self.page_size = 100
 
     @contextmanager
     def session_scope(self):
@@ -42,15 +43,22 @@ class DatabaseManager:
             ).filter_by(username=username).one_or_none()
             return player
 
-    def get_player_games(self, player_id: str):
+    def get_player_games(self, player_id: str, max_games: int = 100):
+        
         with self.session_scope() as session:
+            # Consulta paginada con cargas anticipadas para evitar consultas adicionales
             games = session.query(Game).options(
                 joinedload(Game.white_player),
                 joinedload(Game.black_player)
             ).filter(
                 (Game.players_white_id == player_id) | (Game.players_black_id == player_id)
-            ).all()
+            ).order_by(Game.created_at.desc())
+            if max_games is not None:
+                games = games.limit(max_games).all()
+            else:
+                games = games.all()
             return games
+
 
     def delete_player(self, player_id: str):
         with self.session_scope() as session:

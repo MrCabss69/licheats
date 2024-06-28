@@ -10,8 +10,8 @@ class DataService:
         player = self.database.get_player(username)
         return player
     
-    def get_player_games(self, player: Player) -> Game:
-        games = self.database.get_player_games(player)
+    def get_player_games(self, player: Player, max_games:int=None) -> Game:
+        games = self.database.get_player_games(player, max_games)
         return games
     
     def save_player(self, player: Player) -> None:
