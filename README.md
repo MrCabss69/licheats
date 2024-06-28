@@ -11,6 +11,10 @@ El objetivo principal del proyecto es desarrollar un sistema integral que permit
 - Investigar las preferencias y efectividad de diferentes aperturas de ajedrez.
 - Prever las mejores estrategias de apertura para enfrentamientos específicos entre jugadores.
 
+
+### Ejemplo
+![Sample Plot](resources/sample_plot.png)
+
 ### Preguntas Clave a Responder
 
 El sistema está diseñado para responder a preguntas específicas relacionadas con el comportamiento y el rendimiento de los jugadores:
@@ -29,11 +33,11 @@ El sistema está diseñado para responder a preguntas específicas relacionadas 
 from licheats import Client
 client = Client()
 
-player = client.get_player('Fieber69')
+player = client.get_player('osamabinladen')
 player
 
 
-games = client.get_games('Fieber69')
+games = client.get_games('osamabinladen')
 games
 
 client.save_player(player)
