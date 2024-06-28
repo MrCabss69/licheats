@@ -12,20 +12,16 @@ class Client:
     def resume_stats(self, player:Player, games:list[Game]) -> pd.DataFrame:
         self.stat_service.resume_stats(player, games)
     
-    def get_player(self, username:str):
+    def get_player(self, username:str) -> Player:
         player = self.data_service.get_player(username)
-        if not player:
-            player = self.api_service.get_player(username)
-        return player
+        return self.api_service.get_player(username) if player is None else player
 
-    def get_games(self, username:str, max_games=None):
+    def get_games(self, username:str, max_games:int=None) -> list[Game]:
         games = self.data_service.get_player_games(username, max_games)
-        if not games:
-            games = self.api_service.get_games(username, max_games)
-        return games
+        return self.api_service.get_games(username, max_games) if games is None else games
 
-    def save_player(self,player):
+    def save_player(self, player:Player) -> None:
         self.data_service.save_player(player)
 
-    def save_games(self,games):
+    def save_games(self, games:list[Game]) -> None:
         self.data_service.save_games(games)
