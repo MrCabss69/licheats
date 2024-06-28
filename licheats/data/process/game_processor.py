@@ -4,13 +4,15 @@ class GameProcessor:
     @staticmethod
     def process(data):
         """Process and store a game record from a dictionary into the ORM model."""
+        # Verificar campos requeridos
         required_fields = ['id', 'rated', 'variant', 'speed', 'perf', 'createdAt',
-                           'lastMoveAt', 'status', 'players', 'moves', 'clock']
+                           'lastMoveAt', 'status', 'players', 'moves', 'clock', 'opening']
         missing_fields = [field for field in required_fields if field not in data]
         if missing_fields:
             raise ValueError(f"Missing required fields: {', '.join(missing_fields)}")
         
         try:
+            # Crear instancia del juego
             game = Game(
                 id=data['id'],
                 rated=data['rated'],
@@ -30,7 +32,11 @@ class GameProcessor:
                 players_black_id=data['players']['black']['user']['id'],
                 players_white_rating=data['players']['white']['rating'],
                 players_black_rating=data['players']['black']['rating'],
-                tournament_id=data.get('tournament')
+                tournament_id=data.get('tournament'),
+                # Incorporar información de la apertura
+                opening_eco=data['opening']['eco'] if 'opening' in data else None,
+                opening_name=data['opening']['name'] if 'opening' in data else None,
+                opening_ply=data['opening']['ply'] if 'opening' in data else None
             )
             return game
         except KeyError as e:

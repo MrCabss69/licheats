@@ -2,6 +2,12 @@ import pandas as pd
 from typing import Dict, Any
 import datetime 
 import re 
+from sqlalchemy.inspection import inspect
+
+def to_dict(self):
+    return {c.key: getattr(self, c.key)
+            for c in inspect(self).mapper.column_attrs}
+
 
 def _format_date(date_string: str) -> str:
         # Remove the 'Z' if present and ensure the string ends with '+00:00'

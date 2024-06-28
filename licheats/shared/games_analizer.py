@@ -1,9 +1,9 @@
 
 
 class GamesAnalyzer:
-    def __init__(self, games, player_username):
-        self.games = games  # Lista de partidas
+    def __init__(self, player_username, games):
         self.username = player_username  # Usuario del jugador que estamos analizando
+        self.games = games  # Lista de partidas
 
     def is_player_white(self, game):
         return game.players_white_id == self.username
@@ -38,7 +38,7 @@ class GamesAnalyzer:
     def common_causes_of_defeat(self):
         results = {'time': 0, 'resign': 0, 'checkmate': 0}
         for game in self.games:
-            if game.result == 'loss' and game.players_black_id == self.username or game.players_white_id == self.username:
+            if game.winner != game.players_black_id == self.username or game.players_white_id == self.username:
                 if 'time' in game.status:
                     results['time'] += 1
                 elif 'resign' in game.status:

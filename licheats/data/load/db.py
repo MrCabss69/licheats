@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from contextlib import contextmanager
 from licheats.shared import Base, Player, Game
@@ -8,8 +8,8 @@ class DatabaseManager:
     def __init__(self, engine_url='sqlite:////home/jd/Documentos/CODIGO/Lichess-Openings/licheats/data/ajedrez.db'):
         self.engine = create_engine(engine_url, echo=False)
         Base.metadata.create_all(self.engine)
-        self.Session = sessionmaker(bind=self.engine)
-        
+        # Crear una Session factory que no expire los objetos tras commit
+        self.Session = scoped_session(sessionmaker(bind=self.engine, expire_on_commit=False))
 
     @contextmanager
     def session_scope(self):
@@ -23,7 +23,8 @@ class DatabaseManager:
             session.rollback()
             raise
         finally:
-            session.close()
+            # No cerrar la sesión aquí para reutilizar y mantener objetos persistentes
+            pass
 
     def save_player(self, player: Player):
         with self.session_scope() as session:
@@ -35,16 +36,28 @@ class DatabaseManager:
 
     def get_player(self, username: str) -> Player:
         with self.session_scope() as session:
-            return session.query(Player).filter_by(username=username).one_or_none()
+            player = session.query(Player).options(
+                joinedload(Player.games_as_white),
+                joinedload(Player.games_as_black)
+            ).filter_by(username=username).one_or_none()
+            return player
 
     def get_player_games(self, player_id: str):
         with self.session_scope() as session:
-            games_white = session.query(Game).filter_by(players_white_id=player_id).all()
-            games_black = session.query(Game).filter_by(players_black_id=player_id).all()
-            return games_white + games_black
+            games = session.query(Game).options(
+                joinedload(Game.white_player),
+                joinedload(Game.black_player)
+            ).filter(
+                (Game.players_white_id == player_id) | (Game.players_black_id == player_id)
+            ).all()
+            return games
 
     def delete_player(self, player_id: str):
         with self.session_scope() as session:
             player = session.query(Player).filter_by(username=player_id).one_or_none()
             if player:
                 session.delete(player)
+
+    def close_session(self):
+        """Manually close the session if needed."""
+        self.Session.remove()

@@ -15,8 +15,8 @@ class LichessApiService:
         return player
 
     @staticmethod
-    def get_games(username:str) -> Union[Game]:
-        player_games   = LichessClient().get_games(username)
+    def get_games(username:str, max_games:int=None) -> Union[Game]:
+        player_games   = LichessClient().get_games(username, max_games=None)
         if not player_games:
             return None
         games = []

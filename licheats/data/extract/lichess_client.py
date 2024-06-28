@@ -7,7 +7,7 @@ class LichessClient:
         session = berserk.TokenSession(token)
         self.client = berserk.Client(session)
 
-    def get_games(self, username, max_games=10, since=None, until=None, perf_type=None):
+    def get_games(self, username, max_games=None, since=None, until=None, perf_type=None):
         """Fetch games of a player from Lichess."""
         # Converting datetime to timestamps if not None
         since_ts = berserk.utils.to_millis(since) if since else None
@@ -16,7 +16,7 @@ class LichessClient:
         # Retrieve games using berserk
         games = self.client.games.export_by_player(
             username,
-            max=max_games,
+            max=100,
             since=since_ts,
             until=until_ts,
             perf_type=perf_type,
@@ -50,9 +50,9 @@ if __name__ == '__main__':
     # Ejemplo de uso:
     client = LichessClient(lichess_api_token)
     profile = client.get_profile('DrNykterstein')
-    games = client.get_games('DrNykterstein', max_games=10, perf_type='blitz')
+    games = client.get_games('DrNykterstein', max_games=1, perf_type='blitz')
     evaluation = client.get_cloud_evaluation('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',num_variations=5)
 
-    print(profile)
-    print(games)
-    print(evaluation)
+    print(profile,"\n")
+    print(games,"\n")
+    print(evaluation,"\n")
