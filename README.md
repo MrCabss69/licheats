@@ -26,9 +26,16 @@ El sistema está diseñado para responder a preguntas específicas relacionadas 
 ### Uso
 
 ```python
-from licheats.core.client import Client
-
+from licheats import Client
 client = Client()
-user_resume = client.get_user_resume('username')
-print(user_resume)
+
+player = client.get_player('Fieber69')
+player
+
+
+games = client.get_games('Fieber69')
+games
+
+client.save_player(player)
+client.save_games(games)
 ``````
