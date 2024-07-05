@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Dashboard de Usuario</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="main.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                <h2 class="ms-3">JohnDoe 📈</h2>
+            </div>
+            
+        </div>
+        <div class="row g-2">
+            <div class="col-12 col-md-6 col-lg-3">
+                <div class="p-3 bg-secondary text-light rounded">
+                    <div class="fw-medium">Preferencia de Enroque 🏰</div>
+                    <div><strong>Lado del rey: 65%, Lado de la reina: 35%</strong></div>
+                </div>
+            </div>
+            <!-- Repetir para otros bloques de información -->
+        </div>
+        <div class="row mt-4">
+            <div class="col-12 col-md-6">
+                <canvas id="myBarChart"></canvas>
+            </div>
+            <div class="col-12 col-md-6">
+                <canvas id="myLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <script src="main.js"></script>
+    <script>
+        const barChart = new Chart(document.getElementById('myBarChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Datos Demo',
+                    data: [12, 19, 3, 5, 2, 3],
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        const lineChart = new Chart(document.getElementById('myLineChart'), {
+            type: 'line',
+            data: {
+                labels: ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Visitas',
+                    data: [10, 11, 8, 11, 15, 13],
+                    fill: false,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    </script>
+</body>
+</html>

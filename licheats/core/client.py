@@ -17,7 +17,7 @@ class Client:
                 self.data_service.save_player(player)
         return player
 
-    def get_games(self, username: str, max_games: int = None, autosave: bool = True) -> List[Game]:
+    def get_player_games(self, username: str, max_games: int = None, autosave: bool = True) -> List[Game]:
         """Retrieves or fetches games for a given player."""
         games = self.data_service.get_player_games(username, max_games)
         if not games:

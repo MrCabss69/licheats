@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lichess Assistant</title>
+  <script type="text/javascript" src="popup.js"></script>
+  <style>
+    body { padding: 10px; text-align: center; width: 350px; font-family: Arial, sans-serif; }
+    #statsContainer { background: #f0f0f0; padding: 10px; margin-top: 10px; border-radius: 5px; }
+    h1 { font-size: 16px; }
+    .stat { margin-top: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Your opponent's nickname is:</h1>
+  <blockquote id="opponentNickname" style="background: #eaf5ff; padding: 5px;"></blockquote>
+  <div id="statsContainer">
+    <h1>Player Statistics</h1>
+    <div id="playerInfo" class="stat"></div>
+    <div id="statsInfo" class="stat"></div>
+  </div>
+</body>
+</html>

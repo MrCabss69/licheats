@@ -29,11 +29,16 @@ class DatabaseManager:
 
     def save_player(self, player: Player):
         with self.session_scope() as session:
-            session.add(player)
+            existing_player = session.query(Player).filter_by(username=player.username).first()
+            if not existing_player:
+                # Si el jugador no existe, añádelo como nuevo
+                session.add(player)
 
     def save_game(self, game: Game):
         with self.session_scope() as session:
-            session.add(game)
+            existing_game = session.query(Game).filter_by(id=game.id).first()
+            if not existing_game:
+                session.add(game)
 
     def get_player(self, username: str) -> Player:
         with self.session_scope() as session:

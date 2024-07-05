@@ -17,7 +17,8 @@ El objetivo principal del proyecto es desarrollar un sistema integral que permit
 
 ### Preguntas Clave a Responder
 
-El sistema está diseñado para responder a preguntas específicas relacionadas con el comportamiento y el rendimiento de los jugadores:
+El sistema está diseñado para responder a preguntas específicas relacionadas con hábitos, estilo y comportamiento de los jugadores:
+
 - ¿El jugador tiende a enrocarse? Si es así, ¿hacia qué lado prefiere?
 - ¿El jugador tiene un mejor rendimiento con damas en el tablero o sin ellas?
 - ¿Cuáles son las causas más comunes de las derrotas del jugador (tiempo, abandono, jaque mate)?
@@ -25,6 +26,11 @@ El sistema está diseñado para responder a preguntas específicas relacionadas 
 - ¿El jugador tiene un mejor rendimiento con las piezas blancas o negras?
 - ¿Cómo afecta la presión del tiempo al rendimiento del jugador?
 - ¿Cuál es la preferencia del jugador respecto al ritmo de juego (rápidas, blitz, estándar)?
+
+- Apertura con más victorias de blancas
+- Apertura con más victorias de blancas
+- Apertura con más victorias de negras
+- Apertura con más derrotas de negras
 
 
 ### Uso
