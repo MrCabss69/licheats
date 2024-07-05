@@ -22,9 +22,27 @@ class Player(Base):
     following = Column(Boolean)
     blocking = Column(Boolean)
     follows_you = Column(Boolean)
-    perfs = Column(JSON)
-    counts = Column(JSON)
     streamer_info = Column(JSON)
+
+    # Desglose de perfs
+    ultraBullet_games = Column(Integer)
+    ultraBullet_rating = Column(Integer)
+    bullet_games = Column(Integer)
+    bullet_rating = Column(Integer)
+    blitz_games = Column(Integer)
+    blitz_rating = Column(Integer)
+    rapid_games = Column(Integer)
+    rapid_rating = Column(Integer)
+    classical_games = Column(Integer)
+    classical_rating = Column(Integer)
+    
+    # Desglose de counts
+    all_games = Column(Integer)
+    rated_games = Column(Integer)
+    ai_games = Column(Integer)
+    draw_games = Column(Integer)
+    loss_games = Column(Integer)
+    win_games = Column(Integer)
     
     games_as_white = relationship("Game", back_populates="white_player", foreign_keys="[Game.players_white_id]")
     games_as_black = relationship("Game", back_populates="black_player", foreign_keys="[Game.players_black_id]")
@@ -70,8 +88,6 @@ class Game(Base):
 
     players_white_id = Column(String, ForeignKey('players.username'))
     players_black_id = Column(String, ForeignKey('players.username'))
-    
-    
 
     white_player = relationship("Player", foreign_keys=[players_white_id], back_populates="games_as_white")
     black_player = relationship("Player", foreign_keys=[players_black_id], back_populates="games_as_black")

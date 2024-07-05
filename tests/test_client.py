@@ -9,15 +9,14 @@ class TestClient(unittest.TestCase):
         self.client = Client()
 
     def test_get_player(self):
-        # Mock the response from an external API or database if needed
         player = self.client.get_player(LICHESS_USER)
         self.assertIsInstance(player, Player)
-        self.assertIsNotNone(player)  # Assert player is not None or check other attributes
+        self.assertIsNotNone(player)
         assert player.username == LICHESS_USER
-        
+
     def test_get_games(self):
         games = self.client.get_player_games(LICHESS_USER)
-        self.assertIsInstance(games, list)  # Check that games is a list
+        self.assertIsInstance(games, list)
         for g in games:
             self.assertIsInstance(g, Game)
             

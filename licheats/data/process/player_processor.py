@@ -1,9 +1,9 @@
-import datetime
 from licheats.shared import Player
 
 class PlayerProcessor:
     @staticmethod
     def process(data):
+        print(data)
         """Transforms Lichess API data into an ORM format."""
         player = Player(
             username=data['username'],
@@ -19,8 +19,22 @@ class PlayerProcessor:
             following=data.get('following', False),
             blocking=data.get('blocking', False),
             follows_you=data.get('followsYou', False),
-            perfs=data['perfs'],
-            counts=data['count'],
-            streamer_info=data.get('streamer', {})
+            streamer_info=data.get('streamer', {}),
+            ultraBullet_games=data['perfs']['ultraBullet']['games'],
+            ultraBullet_rating=data['perfs']['ultraBullet']['rating'],
+            bullet_games=data['perfs']['bullet']['games'],
+            bullet_rating=data['perfs']['bullet']['rating'],
+            blitz_games=data['perfs']['blitz']['games'],
+            blitz_rating=data['perfs']['blitz']['rating'],
+            rapid_games=data['perfs']['rapid']['games'],
+            rapid_rating=data['perfs']['rapid']['rating'],
+            classical_games=data['perfs']['classical']['games'],
+            classical_rating=data['perfs']['classical']['rating'],
+            all_games=data['count']['all'],
+            rated_games=data['count']['rated'],
+            ai_games=data['count']['ai'],
+            draw_games=data['count']['draw'],
+            loss_games=data['count']['loss'],
+            win_games=data['count']['win'],
         )
         return player
