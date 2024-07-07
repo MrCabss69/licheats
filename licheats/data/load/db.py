@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker, scoped_session, joinedload
 from sqlalchemy.exc import SQLAlchemyError
 from contextlib import contextmanager
 from licheats.shared import Base, Player, Game
+from typing import Union
 
 class DatabaseManager:
     def __init__(self, engine_url='sqlite:////home/jd/Documentos/CODIGO/Lichess-Openings/licheats/data/ajedrez.db'):
@@ -40,7 +41,9 @@ class DatabaseManager:
             if not existing_game:
                 session.add(game)
 
-    def get_player(self, username: str) -> Player:
+    def get_player(self, username: Union[str, Player]) -> Player:
+        if isinstance(username,Player):
+            username = username.username
         with self.session_scope() as session:
             player = session.query(Player).options(
                 joinedload(Player.games_as_white),
@@ -48,8 +51,9 @@ class DatabaseManager:
             ).filter_by(username=username).one_or_none()
             return player
 
-    def get_player_games(self, player_id: str, max_games: int = 100):
-        
+    def get_player_games(self, player_id:  Union[str, Player], max_games: int = 100):
+        if isinstance(player_id, Player):
+            player_id = player_id.username
         with self.session_scope() as session:
             # Consulta paginada con cargas anticipadas para evitar consultas adicionales
             games = session.query(Game).options(
@@ -64,12 +68,6 @@ class DatabaseManager:
                 games = games.all()
             return games
 
-
-    def delete_player(self, player_id: str):
-        with self.session_scope() as session:
-            player = session.query(Player).filter_by(username=player_id).one_or_none()
-            if player:
-                session.delete(player)
 
     def close_session(self):
         """Manually close the session if needed."""

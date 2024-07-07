@@ -13,12 +13,8 @@ def player_stats():
         return jsonify({'error': 'Username is required'}), 400
     try:
         client = Client()
-        player, games = client.get_player_games(client, username)
-        stats = client.player_games_analysis(username,100)
-        client.save_player(player)
-        client.save_games(games)
-        print(player)
-        print(games)
+        stats = client.player_games_analysis(username, 100)
+        print(stats)
         return stats
     except Exception as e:
         return jsonify({'error': str(e)}), 500

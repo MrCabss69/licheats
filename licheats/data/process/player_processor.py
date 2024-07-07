@@ -3,10 +3,9 @@ from licheats.shared import Player
 class PlayerProcessor:
     @staticmethod
     def process(data):
-        print(data)
         """Transforms Lichess API data into an ORM format."""
         player = Player(
-            username=data['username'],
+            username=data['username'].lower(),
             title=data.get('title'),
             flair=data.get('flair'),
             patron=data.get('patron', False),

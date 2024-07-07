@@ -13,8 +13,7 @@ class DataService:
     
     def get_player_games(self, player:  Union[str, Player], max_games: int = None) -> list:
         """ Retrieve a list of Game instances associated with the player. """
-        games = self.database.get_player_games(player, max_games)
-        return games
+        return self.database.get_player_games(player, max_games)
     
     def save_player(self, player: Player) -> None:
         """ Save a Player instance to the database. """

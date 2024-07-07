@@ -2,7 +2,7 @@
 
 ## Resumen del Proyecto
 
-**Licheats** es un sistema avanzado para la visualización y análisis de estadísticas de partidas de ajedrez, centrado especialmente en las aperturas. Este sistema no solo permite almacenar y gestionar información sobre partidas de ajedrez en una base de datos estructurada, sino que también proporciona herramientas analíticas para explorar estrategias de aperturas, evaluar el rendimiento de los jugadores y predecir resultados basados en el historial de juego.
+**Licheats** es un sistema avanzado para la visualización y análisis de estadísticas de partidas de ajedrez, centrado especialmente en las aperturas. Este sistema permite almacenar y gestionar información sobre partidas de ajedrez en una base de datos estructurada, y además proporciona herramientas analíticas para explorar estrategias de aperturas
 
 ### Objetivos del Proyecto
 
