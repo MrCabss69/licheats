@@ -1,62 +1,62 @@
-// Function to update the nickname in the popup
-function updateNickname(nickname) {
-  console.log("Updating nickname in popup:", nickname);
+const API_BASE = 'http://127.0.0.1:8000';
+
+function setStatus(message) {
+  document.getElementById('status').textContent = message;
+}
+
+function setNickname(nickname) {
   document.getElementById('opponentNickname').textContent = nickname || 'Not found';
 }
 
-// Function to request the nickname using the script content.js
+function topOpening(openings) {
+  const entries = Object.entries(openings || {});
+  if (!entries.length) return 'n/a';
+  entries.sort((a, b) => b[1].total - a[1].total);
+  return entries[0][0];
+}
+
+function displayStats(data) {
+  document.getElementById('gamesCount').textContent = data.games_count;
+  document.getElementById('winRate').textContent = `${data.summary.win_rate}%`;
+  document.getElementById('avgOpponent').textContent = data.summary.avg_opponent_rating ?? 'n/a';
+  document.getElementById('topOpening').textContent = topOpening(data.openings);
+  document.getElementById('statsContainer').hidden = false;
+}
+
+async function fetchPlayerStats(username) {
+  const encoded = encodeURIComponent(username);
+  const response = await fetch(`${API_BASE}/players/${encoded}/analysis?limit=100&refresh=false`);
+  const body = await response.json();
+  if (!response.ok) {
+    const message = body && body.error ? body.error.message : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  return body;
+}
+
 function requestNickname() {
-  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    console.log("Requesting nickname for tab:", tabs[0].id);
-    chrome.tabs.sendMessage(tabs[0].id, {action: "fetchNickname"});
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs && tabs[0];
+    if (!tab || !tab.id) {
+      setStatus('No active Lichess tab found.');
+      return;
+    }
+    chrome.tabs.sendMessage(tab.id, { action: 'fetchNickname' }, async (response) => {
+      const nickname = response && response.nickname;
+      setNickname(nickname);
+      if (!nickname) {
+        setStatus('Could not detect an opponent on this page.');
+        return;
+      }
+      try {
+        setStatus('Loading local analysis...');
+        displayStats(await fetchPlayerStats(nickname));
+        setStatus('Analysis loaded from local Licheats API.');
+      } catch (error) {
+        setStatus(`Backend unavailable or failed: ${error.message}`);
+      }
+    });
   });
 }
 
-// Fetch and display player statistics
-function fetchPlayerStats(username) {
-  console.log("Fetching player stats for username:", username);
-  fetch('http://localhost:5000/get_player_stats', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({username: username})
-  })
-  .then(response => {
-    console.log("Received response from server");
-    return response.json();
-  })
-  .then(data => {
-    console.log("Processed JSON data:", data);
-    if (data && data.player && data.stats) {
-      displayStats(data);
-    } else {
-      console.error('Invalid data received:', data);
-    }
-  })
-  .catch(error => console.error('Error fetching player stats:', error));
-}
-
-// Display player statistics in the popup
-function displayStats(data) {
-  console.log("Displaying stats in popup:", data);
-  const playerInfo = document.getElementById('playerInfo');
-  const statsInfo = document.getElementById('statsInfo');
-  playerInfo.textContent = `Player: ${data.player.username}, Rating: ${data.player.rating}`;
-  statsInfo.innerHTML = `Win rate: ${data.stats.win_rate}%<br>Average opponent rating: ${data.stats.avg_opponent_rating}`;
-}
-
-// Handle incoming messages from other scripts
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-  console.log("Received message:", request);
-  if (request.action === "updateNickname") {
-    updateNickname(request.nickname);
-    fetchPlayerStats(request.nickname);
-  }
-});
-
-// Initial function calls when the popup is loaded
-document.addEventListener('DOMContentLoaded', function() {
-  console.log("Popup DOM fully loaded");
-  requestNickname();
-});
+document.addEventListener('DOMContentLoaded', requestNickname);

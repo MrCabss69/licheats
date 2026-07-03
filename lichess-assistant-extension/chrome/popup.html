@@ -1,22 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>Lichess Assistant</title>
-  <script type="text/javascript" src="popup.js"></script>
-  <style>
-    body { padding: 10px; text-align: center; width: 350px; font-family: Arial, sans-serif; }
-    #statsContainer { background: #f0f0f0; padding: 10px; margin-top: 10px; border-radius: 5px; }
-    h1 { font-size: 16px; }
-    .stat { margin-top: 5px; }
-  </style>
+  <link rel="stylesheet" href="popup.css">
+  <script src="popup.js" defer></script>
 </head>
 <body>
-  <h1>Your opponent's nickname is:</h1>
-  <blockquote id="opponentNickname" style="background: #eaf5ff; padding: 5px;"></blockquote>
-  <div id="statsContainer">
-    <h1>Player Statistics</h1>
-    <div id="playerInfo" class="stat"></div>
-    <div id="statsInfo" class="stat"></div>
-  </div>
+  <main class="card">
+    <p class="eyebrow">Local Licheats</p>
+    <h1>Opponent analysis</h1>
+    <section class="panel">
+      <span class="label">Opponent</span>
+      <strong id="opponentNickname">Detecting...</strong>
+    </section>
+    <section id="status" class="status">Waiting for Lichess page context.</section>
+    <section id="statsContainer" class="stats" hidden>
+      <div><span>Games</span><strong id="gamesCount">0</strong></div>
+      <div><span>Win rate</span><strong id="winRate">0%</strong></div>
+      <div><span>Avg opponent</span><strong id="avgOpponent">n/a</strong></div>
+      <div><span>Top opening</span><strong id="topOpening">n/a</strong></div>
+    </section>
+  </main>
 </body>
 </html>
