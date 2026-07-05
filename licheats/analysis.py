@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Literal
 
 import chess
 
-from .schemas import GameRecord, PlayerAnalysis, PlayerProfile, RatingPoint, ResultBucket
+from .schemas import AnalysisSummary, GameRecord, PlayerAnalysis, PlayerProfile, RatingPoint, ResultBucket
 
 BucketDict = dict[str, int]
 Result = Literal["win", "loss", "draw", "unknown"]
@@ -129,6 +130,49 @@ def _scan_board_features(game: GameRecord, color: str) -> tuple[set[str], str, b
     return castling, _queen_category(board, color), invalid
 
 
+@dataclass(frozen=True)
+class GameAnalysisContext:
+    color: str
+    result: Result
+    opening_key: str
+    time_control: str | None
+    rating: int | None
+    opponent_rating: int | None
+    castling_sides: set[str]
+    queen_category: str
+    invalid_moves: bool
+
+
+def _context_for_game(player: PlayerProfile, game: GameRecord) -> GameAnalysisContext:
+    color = _color_for_player(player, game)
+    castling_sides, queen_category, invalid_moves = _scan_board_features(game, color)
+    return GameAnalysisContext(
+        color=color,
+        result=_result_for_color(game, color),
+        opening_key=_opening_key(game),
+        time_control=_time_control(game),
+        rating=_rating_for_color(game, color),
+        opponent_rating=_opponent_rating(game, color),
+        castling_sides=castling_sides,
+        queen_category=queen_category,
+        invalid_moves=invalid_moves,
+    )
+
+
+def _add_board_feature_buckets(
+    *,
+    castling: dict[str, BucketDict],
+    queen_presence: dict[str, BucketDict],
+    context: GameAnalysisContext,
+) -> None:
+    if context.castling_sides:
+        for side in context.castling_sides:
+            _add(castling[side], context.result)
+    else:
+        _add(castling["none"], context.result)
+    _add(queen_presence[context.queen_category], context.result)
+
+
 class Analyzer:
     def analyze(
         self,
@@ -139,6 +183,10 @@ class Analyzer:
     ) -> PlayerAnalysis:
         by_color = defaultdict(_new_bucket)
         openings = defaultdict(_new_bucket)
+        openings_by_color: dict[str, dict[str, BucketDict]] = {
+            "white": defaultdict(_new_bucket),
+            "black": defaultdict(_new_bucket),
+        }
         castling = defaultdict(_new_bucket)
         queen_presence = defaultdict(_new_bucket)
         time_controls: dict[str, int] = defaultdict(int)
@@ -148,46 +196,43 @@ class Analyzer:
         summary_bucket = _new_bucket()
 
         for game in games:
-            color = _color_for_player(player, game)
-            result = _result_for_color(game, color)
-            _add(summary_bucket, result)
-            _add(by_color[color], result)
-            _add(openings[_opening_key(game)], result)
+            context = _context_for_game(player, game)
+            _add(summary_bucket, context.result)
+            _add(by_color[context.color], context.result)
+            _add(openings[context.opening_key], context.result)
+            if context.color in ("white", "black"):
+                _add(openings_by_color[context.color][context.opening_key], context.result)
 
-            if time_control := _time_control(game):
-                time_controls[time_control] += 1
+            if context.time_control:
+                time_controls[context.time_control] += 1
 
-            rating = _rating_for_color(game, color)
-            if rating is not None and game.created_at is not None:
-                rating_timeline.append(RatingPoint(at=game.created_at, rating=rating))
+            if context.rating is not None and game.created_at is not None:
+                rating_timeline.append(RatingPoint(at=game.created_at, rating=context.rating))
 
-            opponent_rating = _opponent_rating(game, color)
-            if opponent_rating is not None:
-                opponent_ratings.append(opponent_rating)
+            if context.opponent_rating is not None:
+                opponent_ratings.append(context.opponent_rating)
 
-            castling_sides, queen_category, invalid_moves = _scan_board_features(game, color)
-            if invalid_moves:
+            if context.invalid_moves:
                 unsupported.add("Some games contain moves or FENs that python-chess could not parse.")
-            if castling_sides:
-                for side in castling_sides:
-                    _add(castling[side], result)
-            else:
-                _add(castling["none"], result)
-            _add(queen_presence[queen_category], result)
+            _add_board_feature_buckets(
+                castling=castling,
+                queen_presence=queen_presence,
+                context=context,
+            )
 
         frozen_summary = _freeze(summary_bucket)
         avg_opponent_rating = (
             round(sum(opponent_ratings) / len(opponent_ratings), 2) if opponent_ratings else None
         )
-        summary = {
-            "total_games": frozen_summary.total,
-            "wins": frozen_summary.wins,
-            "losses": frozen_summary.losses,
-            "draws": frozen_summary.draws,
-            "unknown": frozen_summary.unknown,
-            "win_rate": frozen_summary.win_rate,
-            "avg_opponent_rating": avg_opponent_rating,
-        }
+        summary = AnalysisSummary(
+            total_games=frozen_summary.total,
+            wins=frozen_summary.wins,
+            losses=frozen_summary.losses,
+            draws=frozen_summary.draws,
+            unknown=frozen_summary.unknown,
+            win_rate=frozen_summary.win_rate,
+            avg_opponent_rating=avg_opponent_rating,
+        )
 
         return PlayerAnalysis(
             player=player,
@@ -197,6 +242,10 @@ class Analyzer:
             summary=summary,
             by_color={key: _freeze(value) for key, value in by_color.items()},
             openings={key: _freeze(value) for key, value in openings.items()},
+            openings_by_color={
+                color: {key: _freeze(bucket) for key, bucket in table.items()}
+                for color, table in openings_by_color.items()
+            },
             castling={key: _freeze(value) for key, value in castling.items()},
             queen_presence={key: _freeze(value) for key, value in queen_presence.items()},
             time_controls=dict(time_controls),

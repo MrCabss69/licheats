@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from typing import Any
 
@@ -144,37 +146,98 @@ class LichessGateway:
         *,
         limit: int = 100,
         perf_type: str | None = None,
+        include_moves: bool = True,
+        page_size: int = 1000,
     ) -> list[GameRecord]:
+        return list(
+            self.iter_games(
+                username,
+                limit=limit,
+                perf_type=perf_type,
+                include_moves=include_moves,
+                page_size=page_size,
+            )
+        )
+
+    def iter_games(
+        self,
+        username: str,
+        *,
+        limit: int = 100,
+        perf_type: str | None = None,
+        include_moves: bool = True,
+        page_size: int = 1000,
+    ) -> Iterator[GameRecord]:
+        remaining = max(0, limit)
+        until: int | None = None
+        url = f"{self.settings.lichess_base_url}/api/games/user/{username}"
+
+        while remaining > 0:
+            page_limit = min(page_size, remaining)
+            params = self._game_params(
+                limit=page_limit,
+                perf_type=perf_type,
+                include_moves=include_moves,
+                until=until,
+            )
+            page_games = 0
+            oldest_seen: datetime | None = None
+
+            with self._stream_request(
+                "GET",
+                url,
+                params=params,
+                headers=self._headers("application/x-ndjson"),
+            ) as response:
+                for line in response.iter_lines():
+                    if not line.strip():
+                        continue
+                    game = self._parse_game_line(line)
+                    page_games += 1
+                    remaining -= 1
+                    if game.created_at is not None and (
+                        oldest_seen is None or game.created_at < oldest_seen
+                    ):
+                        oldest_seen = game.created_at
+                    yield game
+                    if remaining <= 0:
+                        break
+
+            if page_games == 0 or page_games < page_limit or oldest_seen is None:
+                break
+            until = int(oldest_seen.astimezone(timezone.utc).timestamp() * 1000) - 1
+
+    @staticmethod
+    def _game_params(
+        *,
+        limit: int,
+        perf_type: str | None,
+        include_moves: bool,
+        until: int | None = None,
+    ) -> dict[str, Any]:
         params: dict[str, Any] = {
             "max": limit,
-            "moves": "true",
+            "moves": "true" if include_moves else "false",
             "opening": "true",
             "clocks": "true",
             "evals": "false",
         }
         if perf_type:
             params["perfType"] = perf_type
+        if until is not None:
+            params["until"] = until
+        return params
 
-        url = f"{self.settings.lichess_base_url}/api/games/user/{username}"
-        response = self._request(
-            "GET",
-            url,
-            params=params,
-            headers=self._headers("application/x-ndjson"),
-        )
-        games: list[GameRecord] = []
-        for line in response.text.splitlines():
-            if not line.strip():
-                continue
-            try:
-                games.append(normalize_game(json.loads(line)))
-            except json.JSONDecodeError as exc:
-                raise LichessPayloadError(
-                    "Invalid NDJSON returned by Lichess",
-                    code="invalid_ndjson",
-                    details={"line": line[:200]},
-                ) from exc
-        return games
+    @staticmethod
+    def _parse_game_line(line: str) -> GameRecord:
+        try:
+            return normalize_game(json.loads(line))
+        except json.JSONDecodeError as exc:
+            raise LichessPayloadError(
+                "Invalid NDJSON returned by Lichess",
+                code="invalid_ndjson",
+                details={"line": line[:200]},
+            ) from exc
 
     def _request(self, method: str, url: str, **kwargs: Any) -> httpx.Response:
         try:
@@ -186,6 +249,30 @@ class LichessGateway:
                 f"Lichess returned HTTP {exc.response.status_code}",
                 code="lichess_http_error",
                 details={"status_code": exc.response.status_code, "body": exc.response.text[:500]},
+            ) from exc
+        except httpx.HTTPError as exc:
+            raise LichessError(str(exc), code="lichess_transport_error") from exc
+
+    @contextmanager
+    def _stream_request(self, method: str, url: str, **kwargs: Any) -> Iterator[httpx.Response]:
+        try:
+            with self._client.stream(
+                method,
+                url,
+                timeout=self.settings.request_timeout,
+                **kwargs,
+            ) as response:
+                response.raise_for_status()
+                yield response
+        except httpx.HTTPStatusError as exc:
+            try:
+                body = exc.response.text
+            except httpx.ResponseNotRead:
+                body = exc.response.read().decode("utf-8", errors="replace")
+            raise LichessError(
+                f"Lichess returned HTTP {exc.response.status_code}",
+                code="lichess_http_error",
+                details={"status_code": exc.response.status_code, "body": body[:500]},
             ) from exc
         except httpx.HTTPError as exc:
             raise LichessError(str(exc), code="lichess_transport_error") from exc

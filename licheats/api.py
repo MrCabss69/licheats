@@ -4,13 +4,13 @@ import logging
 from typing import Any
 
 import uvicorn
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from .app import Licheats
 from .lichess import LichessError
-from .schemas import ErrorDetail, ErrorResponse, PlayerAnalysis, SyncResult
+from .schemas import ErrorDetail, ErrorResponse, PlayerAnalysis, PlayerProfileSummary, SyncJobStatus, SyncResult
 from .settings import Settings
 
 logger = logging.getLogger(__name__)
@@ -52,19 +52,54 @@ def create_app(settings: Settings | None = None, service: Licheats | None = None
     @app.get("/players/{username}/analysis", response_model=PlayerAnalysis)
     def analyze_player(
         username: str,
-        limit: int = Query(default=100, ge=1, le=1000),
+        limit: int = Query(default=100, ge=1, le=5000),
         refresh: bool = False,
         perf_type: str | None = None,
     ) -> PlayerAnalysis:
         return service.analyze_player(username, limit=limit, refresh=refresh, perf_type=perf_type)
+
+    @app.get("/players/{username}/profile-summary", response_model=PlayerProfileSummary)
+    def profile_summary(username: str) -> PlayerProfileSummary:
+        return service.profile_summary(username)
 
     @app.post("/players/{username}/sync", response_model=SyncResult)
     def sync_player(
         username: str,
         limit: int = Query(default=100, ge=1, le=1000),
         perf_type: str | None = None,
+        include_moves: bool = True,
+        page_size: int = Query(default=1000, ge=1, le=1000),
     ) -> SyncResult:
-        return service.sync_player(username, limit=limit, perf_type=perf_type)
+        return service.sync_player(
+            username,
+            limit=limit,
+            perf_type=perf_type,
+            include_moves=include_moves,
+            page_size=page_size,
+        )
+
+    @app.post("/players/{username}/sync-jobs", response_model=SyncJobStatus)
+    def start_sync_job(
+        username: str,
+        limit: int = Query(default=5000, ge=1, le=20000),
+        perf_type: str | None = None,
+        include_moves: bool = False,
+        page_size: int = Query(default=1000, ge=1, le=5000),
+    ) -> SyncJobStatus:
+        return service.start_sync_job(
+            username,
+            limit=limit,
+            perf_type=perf_type,
+            include_moves=include_moves,
+            page_size=page_size,
+        )
+
+    @app.get("/sync-jobs/{job_id}", response_model=SyncJobStatus)
+    def sync_job_status(job_id: str) -> SyncJobStatus:
+        job = service.get_sync_job(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Sync job not found")
+        return job
 
     return app
 

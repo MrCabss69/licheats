@@ -71,7 +71,8 @@ def _now() -> datetime:
 class Repository:
     def __init__(self, db_url: str):
         _ensure_sqlite_parent(db_url)
-        self.engine = create_engine(db_url, future=True)
+        engine_args = {"connect_args": {"check_same_thread": False}} if db_url.startswith("sqlite") else {}
+        self.engine = create_engine(db_url, future=True, **engine_args)
         Base.metadata.create_all(self.engine)
         self._session = sessionmaker(self.engine, expire_on_commit=False, future=True)
 
@@ -91,11 +92,17 @@ class Repository:
             session.commit()
         return 1
 
-    def upsert_games(self, games: Iterable[GameRecord]) -> int:
+    def upsert_games(self, games: Iterable[GameRecord], *, preserve_existing_moves: bool = False) -> int:
         count = 0
         with self.session() as session:
             for game in games:
-                session.merge(self._game_to_row(game))
+                row = self._game_to_row(game)
+                if preserve_existing_moves and not game.moves:
+                    existing = session.get(GameRow, game.id)
+                    if existing is not None and existing.moves:
+                        row.moves = existing.moves
+                        row.initial_fen = row.initial_fen or existing.initial_fen
+                session.merge(row)
                 count += 1
             session.commit()
         return count
@@ -105,11 +112,19 @@ class Repository:
             row = session.get(PlayerRow, username.lower())
             return self._row_to_player(row) if row else None
 
-    def get_games_for_player(self, username: str, limit: int = 100) -> list[GameRecord]:
+    def get_games_for_player(
+        self,
+        username: str,
+        limit: int = 100,
+        perf_type: str | None = None,
+    ) -> list[GameRecord]:
         user = username.lower()
+        filters = [(GameRow.white_id == user) | (GameRow.black_id == user)]
+        if perf_type:
+            filters.append(GameRow.perf == perf_type)
         statement = (
             select(GameRow)
-            .where((GameRow.white_id == user) | (GameRow.black_id == user))
+            .where(*filters)
             .order_by(GameRow.created_at.desc())
             .limit(limit)
         )
