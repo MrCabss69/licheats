@@ -3,6 +3,12 @@
   "name": "Lichess Assistant",
   "description": "Local Licheats companion for opponent analysis on Lichess",
   "version": "0.2.0",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "licheats@local",
+      "strict_min_version": "115.0"
+    }
+  },
   "permissions": ["activeTab"],
   "host_permissions": [
     "https://*.lichess.org/*",

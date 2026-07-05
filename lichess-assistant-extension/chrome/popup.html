@@ -8,19 +8,45 @@
 </head>
 <body>
   <main class="card">
-    <p class="eyebrow">Local Licheats</p>
-    <h1>Opponent analysis</h1>
-    <section class="panel">
-      <span class="label">Opponent</span>
-      <strong id="opponentNickname">Detecting...</strong>
+    <header class="hero">
+      <div class="hero-top">
+        <p class="eyebrow">Licheats</p>
+        <button id="refreshBtn" class="icon-btn" type="button" aria-label="Refresh from Lichess" title="Refresh from Lichess" hidden>&#8635;</button>
+      </div>
+      <h1 id="opponentNickname">Detecting&hellip;</h1>
+      <p id="asOf" class="meta" hidden></p>
+      <section id="heroVerdict" class="verdict" aria-live="polite" hidden>
+      </section>
+    </header>
+
+    <section id="status" class="status" role="status" aria-live="polite">Waiting for Lichess page context.</section>
+
+    <section id="errorBox" class="error" role="alert" hidden>
+      <p id="errorMsg" class="error-msg"></p>
+      <button id="retryBtn" class="btn" type="button">Retry</button>
     </section>
-    <section id="status" class="status">Waiting for Lichess page context.</section>
-    <section id="statsContainer" class="stats" hidden>
-      <div><span>Games</span><strong id="gamesCount">0</strong></div>
-      <div><span>Win rate</span><strong id="winRate">0%</strong></div>
-      <div><span>Avg opponent</span><strong id="avgOpponent">n/a</strong></div>
-      <div><span>Top opening</span><strong id="topOpening">n/a</strong></div>
+
+    <section id="skeleton" class="skeleton" aria-hidden="true" hidden>
+      <div class="sk-line w40"></div>
+      <div class="sk-line w72"></div>
+      <div class="sk-block hero-sk"></div>
+      <div class="sk-segments"></div>
+      <div class="sk-block"></div>
     </section>
+
+    <section id="content" class="content" hidden>
+      <nav class="tabs" role="tablist" aria-label="Analysis views">
+        <button id="tab-prep" class="tab" type="button" role="tab" aria-selected="true" aria-controls="prepPanel" tabindex="0" data-tab="prep">Prep</button>
+        <button id="tab-style" class="tab" type="button" role="tab" aria-selected="false" aria-controls="stylePanel" tabindex="-1" data-tab="style">Style</button>
+        <button id="tab-trends" class="tab" type="button" role="tab" aria-selected="false" aria-controls="trendsPanel" tabindex="-1" data-tab="trends">Trends</button>
+      </nav>
+
+      <section id="prepPanel" class="tabpanel" role="tabpanel" tabindex="0" aria-labelledby="tab-prep"></section>
+      <section id="stylePanel" class="tabpanel" role="tabpanel" tabindex="0" aria-labelledby="tab-style" hidden></section>
+      <section id="trendsPanel" class="tabpanel" role="tabpanel" tabindex="0" aria-labelledby="tab-trends" hidden></section>
+    </section>
+
+    <footer class="foot">Public games &middot; not live assistance</footer>
   </main>
 </body>
 </html>
