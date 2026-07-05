@@ -1,0 +1,11 @@
+{
+  "id": "fieber69",
+  "username": "Fieber69",
+  "title": "NM",
+  "url": "https://lichess.org/@/Fieber69",
+  "perfs": {
+    "blitz": {"games": 10, "rating": 1800},
+    "rapid": {"games": 5, "rating": 1750}
+  },
+  "count": {"all": 15, "rated": 14, "win": 8, "loss": 5, "draw": 2}
+}
